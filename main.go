@@ -205,7 +205,14 @@ func (p *Plugin) GetSecretsManagerSecret(s SecretsManagerRef) ([]byte, error) {
 	}
 
 	if a != nil {
-		n = aws.String(fmt.Sprintf("arn:aws:secretsmanager:%v:%v:secret:%v", r, a, n))
+		n = aws.String(
+			fmt.Sprintf(
+				"arn:aws:secretsmanager:%s:%s:secret:%s",
+				aws.ToString(r),
+				aws.ToString(a),
+				aws.ToString(n),
+			),
+		)
 	}
 
 	ck := *n
