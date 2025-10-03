@@ -61,15 +61,15 @@ jobs:
           )
           for p in "${PLATFORMS[@]}"; do
             IFS=":" read -r GOOS GOARCH <<< "$p"
-            OUT="${APPNAME}"
+            OUT="${APPNAME}-${GOOS}-${GOARCH}"
             echo "Building ${OUT}..."
             GOOS=${GOOS} GOARCH=${GOARCH} go build \
               -trimpath -ldflags="-s -w -X main.version=${{ steps.vars.outputs.artifact_name }}" \
-              -o "dist/${OUT}" .
+              -o "dist/${APPNAME}" .
 
-            (cd dist && tar -czf "${OUT}.tar.gz" "${OUT}")
+            (cd dist && tar -czf "${OUT}.tar.gz" "${APPNAME}")
             sha256sum "dist/${OUT}.tar.gz" > "dist/${OUT}.sha256"
-            rm -f "dist/${OUT}"   # remove raw binary, keep archive + checksum
+            rm -f "dist/${APPNAME}"   # remove raw binary, keep archive + checksum
           done
 
       - name: Write metadata
