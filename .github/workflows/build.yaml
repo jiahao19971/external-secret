@@ -63,9 +63,9 @@ jobs:
             IFS=":" read -r GOOS GOARCH <<< "$p"
             OUT="${APPNAME}-${GOOS}-${GOARCH}"
             echo "Building ${OUT}..."
-            GOOS=${GOOS} GOARCH=${GOARCH} go build -trimpath -ldflags="-s -w -X main.version=${{ steps.vars.outputs.artifact_name }}" -o "dist/${OUT}" ./cmd/${APPNAME} || \
-              # fallback if your main package path differs
-              GOOS=${GOOS} GOARCH=${GOARCH} go build -trimpath -ldflags="-s -w -X main.version=${{ steps.vars.outputs.artifact_name }}" -o "dist/${OUT}" ./...
+            GOOS=${GOOS} GOARCH=${GOARCH} go build \
+              -trimpath -ldflags="-s -w -X main.version=${{ steps.vars.outputs.artifact_name }}" \
+              -o "dist/${OUT}" .
             tar -C dist -czf "dist/${OUT}.tar.gz" -C dist "$(basename ${OUT})"
             sha256sum "dist/${OUT}.tar.gz" > "dist/${OUT}.sha256"
             rm -f "dist/${OUT}"
