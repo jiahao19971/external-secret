@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"reflect"
 	"strconv"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	corev1 "k8s.io/api/core/v1"
@@ -27,7 +27,8 @@ type Spec struct {
 }
 
 type SecretsManagerConfig struct {
-	Region *string `json:"region,omitempty" yaml:"region,omitempty"`
+	Region    *string `json:"region,omitempty" yaml:"region,omitempty"`
+	AccountId *string `json:"account_id,omitempty" yaml:"region,omitempty"`
 }
 
 type Secret struct {
@@ -65,7 +66,7 @@ func NewPlugin() Plugin {
 }
 
 func (p *Plugin) Read(fileName string) error {
-	b, err := ioutil.ReadFile(os.Args[1])
+	b, err := os.ReadFile(os.Args[1])
 
 	if err != nil {
 		return err
@@ -183,7 +184,9 @@ func (p *Plugin) GenerateSecret() (*corev1.Secret, error) {
 }
 
 func (p *Plugin) NewSecretsManagerSvc(r *string) (*secretsmanager.Client, error) {
-	cfg, err := config.LoadDefaultConfig(config.WithRegion(*r))
+	cfg, err := config.LoadDefaultConfig(
+		config.WithRegion(*r),
+	)
 
 	if err != nil {
 		return nil, err
@@ -195,9 +198,14 @@ func (p *Plugin) NewSecretsManagerSvc(r *string) (*secretsmanager.Client, error)
 func (p *Plugin) GetSecretsManagerSecret(s SecretsManagerRef) ([]byte, error) {
 	n := s.Name
 	r := s.Region
+	a := p.Spec.SecretsManagerConfig.AccountId
 
 	if r == nil {
 		r = p.Spec.SecretsManagerConfig.Region
+	}
+
+	if a != nil {
+		n = aws.String(fmt.Sprintf("arn:aws:secretsmanager:%v:%v:secret:%v", r, a, n))
 	}
 
 	ck := *n

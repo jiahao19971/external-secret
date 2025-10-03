@@ -25,6 +25,6 @@ changelog:
     - '^test:'
 release:
   github:
-    owner: imranismail
+    owner: jiahao19971
     name: external-secret
   prerelease: auto
