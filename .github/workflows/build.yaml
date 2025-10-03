@@ -66,9 +66,10 @@ jobs:
             GOOS=${GOOS} GOARCH=${GOARCH} go build \
               -trimpath -ldflags="-s -w -X main.version=${{ steps.vars.outputs.artifact_name }}" \
               -o "dist/${OUT}" .
-            tar -C dist -czf "dist/${OUT}.tar.gz" -C dist "$(basename ${OUT})"
+
+            (cd dist && tar -czf "${OUT}.tar.gz" "${OUT}")
             sha256sum "dist/${OUT}.tar.gz" > "dist/${OUT}.sha256"
-            rm -f "dist/${OUT}"
+            rm -f "dist/${OUT}"   # remove raw binary, keep archive + checksum
           done
 
       - name: Write metadata
